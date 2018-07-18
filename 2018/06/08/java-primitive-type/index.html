@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Java," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="虽然这是一个非常简单的问题，但对应的回答绝非那么简单！其实完全可以从Java的基本类型延伸扩展到很多其他方面，具体说来有整数的有无符号表示，整数补码的溢出、浮点数的精度，32位虚拟机下long和double的线程安全，以及带坑的自动拆箱问题。">
+<meta name="keywords" content="Java">
+<meta property="og:type" content="article">
+<meta property="og:title" content="请简单介绍一下Java的基本类型？">
+<meta property="og:url" content="http://yoursite.com/2018/06/08/java-primitive-type/index.html">
+<meta property="og:site_name" content="flysall&#39;s home">
+<meta property="og:description" content="虽然这是一个非常简单的问题，但对应的回答绝非那么简单！其实完全可以从Java的基本类型延伸扩展到很多其他方面，具体说来有整数的有无符号表示，整数补码的溢出、浮点数的精度，32位虚拟机下long和double的线程安全，以及带坑的自动拆箱问题。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-07-18T15:45:27.761Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="请简单介绍一下Java的基本类型？">
+<meta name="twitter:description" content="虽然这是一个非常简单的问题，但对应的回答绝非那么简单！其实完全可以从Java的基本类型延伸扩展到很多其他方面，具体说来有整数的有无符号表示，整数补码的溢出、浮点数的精度，32位虚拟机下long和double的线程安全，以及带坑的自动拆箱问题。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"always","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/06/08/java-primitive-type/"/>
+
+
+
+
+
+  <title>请简单介绍一下Java的基本类型？ | flysall's home</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">flysall's home</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/06/08/java-primitive-type/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="flysall">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/assets/blogImg/myavatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="flysall's home">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">请简单介绍一下Java的基本类型？</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-06-08T15:23:47+08:00">
+                2018-06-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>虽然这是一个非常简单的问题，但对应的回答绝非那么简单！其实完全可以从Java的基本类型延伸扩展到很多其他方面，具体说来有整数的有无符号表示，整数补码的溢出、浮点数的精度，32位虚拟机下<code>long</code>和<code>double</code>的线程安全，以及带坑的自动拆箱问题。<br><a id="more"></a></p>
+<h2 id="Java基本类型及其对应的包装类型"><a href="#Java基本类型及其对应的包装类型" class="headerlink" title="Java基本类型及其对应的包装类型"></a>Java基本类型及其对应的包装类型</h2><p>算上<code>void</code>的话，Java共计有九种基本类型，《Java编程思想》上有一个表格总结得不错，用<code>markdown</code>实现的效果如下：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">基本类型</th>
+<th style="text-align:center">大小</th>
+<th style="text-align:center">最小值</th>
+<th style="text-align:center">最大值</th>
+<th style="text-align:center">包装器类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">boolean</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">Boolean</td>
+</tr>
+<tr>
+<td style="text-align:left">char</td>
+<td style="text-align:center">16位</td>
+<td style="text-align:center">Unicode o</td>
+<td style="text-align:center">Unicode 2^16-1</td>
+<td style="text-align:center">Character</td>
+</tr>
+<tr>
+<td style="text-align:left">byte</td>
+<td style="text-align:center">8位</td>
+<td style="text-align:center">-128</td>
+<td style="text-align:center">+127</td>
+<td style="text-align:center">Byte</td>
+</tr>
+<tr>
+<td style="text-align:left">short</td>
+<td style="text-align:center">16位</td>
+<td style="text-align:center">-(2^15)</td>
+<td style="text-align:center">+(2^15-1)</td>
+<td style="text-align:center">Short</td>
+</tr>
+<tr>
+<td style="text-align:left">int</td>
+<td style="text-align:center">32位</td>
+<td style="text-align:center">-(2^31)</td>
+<td style="text-align:center">+(2^31-1)</td>
+<td style="text-align:center">Integer</td>
+</tr>
+<tr>
+<td style="text-align:left">long</td>
+<td style="text-align:center">64位</td>
+<td style="text-align:center">-(2^63)</td>
+<td style="text-align:center">+(2^63-1)</td>
+<td style="text-align:center">Long</td>
+</tr>
+<tr>
+<td style="text-align:left">float</td>
+<td style="text-align:center">32位</td>
+<td style="text-align:center">IEEE754</td>
+<td style="text-align:center">IEEE754</td>
+<td style="text-align:center">Float</td>
+</tr>
+<tr>
+<td style="text-align:left">double</td>
+<td style="text-align:center">64位</td>
+<td style="text-align:center">IEEE754</td>
+<td style="text-align:center">IEEE754</td>
+<td style="text-align:center">Double</td>
+</tr>
+<tr>
+<td style="text-align:left">void</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">Void</td>
+</tr>
+</tbody>
+</table>
+<p>细心的朋友可能已经发现：Java中只有有符号数，并没有无符号数。还比较值得一提的是<code>IEE754</code>，这个还是直接参阅<a href="https://en.wikipedia.org/wiki/IEEE_754" target="_blank" rel="external">维基</a>比较好。</p>
+<h2 id="整数的有无符号表示"><a href="#整数的有无符号表示" class="headerlink" title="整数的有无符号表示"></a>整数的有无符号表示</h2><p>这个问题既复杂也简单，关键在于怎么理解。从简单的角度来看，比方说有4个比特位，那么有2的4次方共计16种排列，也就是说可以表示16种比特序列，具体是<code>0000</code>到<code>1111</code>。先来看个表格。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">二进制比特序列</th>
+<th style="text-align:center">对应的十进制无符号数</th>
+<th style="text-align:center">对应的十进制有符号数(补码)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">0000</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">0</td>
+</tr>
+<tr>
+<td style="text-align:left">0001</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:left">0010</td>
+<td style="text-align:center">2</td>
+<td style="text-align:center">2</td>
+</tr>
+<tr>
+<td style="text-align:left">0011</td>
+<td style="text-align:center">3</td>
+<td style="text-align:center">3</td>
+</tr>
+<tr>
+<td style="text-align:left">0100</td>
+<td style="text-align:center">4</td>
+<td style="text-align:center">4</td>
+</tr>
+<tr>
+<td style="text-align:left">0101</td>
+<td style="text-align:center">5</td>
+<td style="text-align:center">5</td>
+</tr>
+<tr>
+<td style="text-align:left">0110</td>
+<td style="text-align:center">6</td>
+<td style="text-align:center">6</td>
+</tr>
+<tr>
+<td style="text-align:left">0111</td>
+<td style="text-align:center">7</td>
+<td style="text-align:center">7</td>
+</tr>
+<tr>
+<td style="text-align:left">1000</td>
+<td style="text-align:center">8</td>
+<td style="text-align:center">-8</td>
+</tr>
+<tr>
+<td style="text-align:left">1001</td>
+<td style="text-align:center">9</td>
+<td style="text-align:center">-7</td>
+</tr>
+<tr>
+<td style="text-align:left">1010</td>
+<td style="text-align:center">10</td>
+<td style="text-align:center">-6</td>
+</tr>
+<tr>
+<td style="text-align:left">1011</td>
+<td style="text-align:center">11</td>
+<td style="text-align:center">-5</td>
+</tr>
+<tr>
+<td style="text-align:left">1100</td>
+<td style="text-align:center">12</td>
+<td style="text-align:center">-4</td>
+</tr>
+<tr>
+<td style="text-align:left">1101</td>
+<td style="text-align:center">13</td>
+<td style="text-align:center">-3</td>
+</tr>
+<tr>
+<td style="text-align:left">1110</td>
+<td style="text-align:center">14</td>
+<td style="text-align:center">-2</td>
+</tr>
+<tr>
+<td style="text-align:left">1111</td>
+<td style="text-align:center">15</td>
+<td style="text-align:center">-1</td>
+</tr>
+</tbody>
+</table>
+<h3 id="无符号数"><a href="#无符号数" class="headerlink" title="无符号数"></a>无符号数</h3><p>无符号可以简单的理解为只拿这些比特序列来表示非负整数，把这些二进制比特序列转换为十进制即可得到我们想要的无符号数。</p>
+<h3 id="有符号数-补码"><a href="#有符号数-补码" class="headerlink" title="有符号数(补码)"></a>有符号数(补码)</h3><p>有符号数也就意味着我们要把从这16个比特序列拿一部分出来表示负数，具体拿多少，怎么分配才是最有意思的地方。按以下思路走一遍：初步设想拿一半来表示正数，那一半来表示负数，但中间还有个零，于是我们决定把<code>0000</code>到<code>0111</code>这八个比特序列用来表示<code>0</code>到<code>7</code>，在剩下的8个比特序列中，分别是从<code>1000</code>到<code>1111</code>，其中<code>1111</code>最大，从<code>-8</code>到<code>-1</code>，其中<code>-1</code>最大，暂且决定用<code>1111</code>来表示<code>-1</code>,根据相对大小关系把上述表格填上，填完后再来看看这样有什么好处。对于非负数，具体是<code>0</code>到<code>7</code>，它们对应的二进制比特序列的最高位都是<code>0</code>，对于那些负数，具体是<code>-8</code>到<code>-1</code>，它们对应的二进制比特序列的最高位都是<code>1</code>，<strong>所以可以通过最高位来判断一个有符号数是正数还是负数。</strong>前面说过，我们用<code>1111</code>来表示<code>-1</code>，有了<code>-1</code>，我们就能得到<code>-2</code>，也就是<code>-1</code>减<code>1</code>，即<code>1111</code>减<code>0001</code>，计算结果为<code>1110</code>，刚好是上述表格中<code>-2</code>的二进制表示，从数学的角度上看，<code>-1</code>加<code>-1</code>的结果也是<code>-2</code>，那<code>1111</code>加<code>1111</code>的结果是多少呢？你绝没有算错，丢弃掉最高位的进位后得到的结果是<code>1110</code>，正是上述表格中<code>-2</code>的二进制表示。正式介绍一下，这玩意叫<strong>补码</strong>。<strong>换而言之，补码可以把减法运算转换为加法运算</strong>，这才是它厉害的地方，毕竟CPU里只有加法器，而没有减法器。</p>
+<h2 id="补码溢出"><a href="#补码溢出" class="headerlink" title="补码溢出"></a>补码溢出</h2><p>介绍完补码，直奔下一主题<strong>补码溢出</strong>，直接看一段一般的二分查找Java代码：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">public class Search &#123;</div><div class="line">    public static int binarySearch(int[] nums, int target) &#123;</div><div class="line">        int low = 0, high = nums.length-1;</div><div class="line">        while(low &lt;= high) &#123;</div><div class="line">            int mid = (low + high) / 2;  // #1 bug</div><div class="line">            if(target == nums[mid]) </div><div class="line">                return mid;</div><div class="line">            else if(target &lt; nums[mid]) </div><div class="line">                right = mid-1;</div><div class="line">            else &#123;</div><div class="line">                left = mid+1;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        return -1;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure><br>上述代码的问题在于，Java中只有有符号数，<code>#1</code>处代码为<code>int mid = (low + high) / 2;</code>，这就存在一个很大的隐患：<strong>当<code>low</code>和<code>high</code>都很大的时候它两相加会得到一个负数</strong>，这样计算出的<code>mid</code>自然时不对的，按照上述只有4个比特位时的补码表格，<code>5</code>加<code>6</code>得到的结果是<code>-3</code>而不是<code>13</code>，此即补码的<strong>溢出</strong>。既然相加会溢出，那就换成相减好了，这在数学上并不困难，代码改为<code>int mid = low + (high - low) / 2;</code>，这样就解决了溢出问题，不过还能用位运算稍微优化一下，改为<code>int mid = low + ((high - low) &gt;&gt; 1);</code>，不要嫌扩号多，<strong>位移运算符的优先级要比加减运算符低。</strong>最终的二分查找代码如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">public class Search &#123;</div><div class="line">    public static int binarySearch(int[] nums, int target) &#123;</div><div class="line">        int low = 0, high = nums.length-1;</div><div class="line">        while(low &lt;= high) &#123;</div><div class="line">            int mid = low + ((high - low) &gt;&gt; 1);</div><div class="line">            if(target == nums[mid]) </div><div class="line">                return mid;</div><div class="line">            else if(target &lt; nums[mid]) </div><div class="line">                right = mid-1;</div><div class="line">            else &#123;</div><div class="line">                left = mid+1;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        return -1;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h2 id="浮点数的精度问题"><a href="#浮点数的精度问题" class="headerlink" title="浮点数的精度问题"></a>浮点数的精度问题</h2><p>完全可以用一句话来描述浮点数的精度问题：在有限个位内，一个十进制浮点数无法精确的用二进制表示。Java中有两种浮点数，分别是<code>32</code>位的<code>float</code>和<code>64</code>位的<code>double</code>，就拿<code>float</code>来说，当一个十进制的浮点数转换为二进制，其对应的长度超过<code>32</code>比特后会被截断，也就是说：<strong>两个不同的十进制浮点数对应的二进制表示可能是相同的。</strong>《Effective Java》上也谈到过这个问题，只不过换了种说法：<strong>不要使用<code>==</code>运算符来判断两个浮点数是否相等。</strong><br>——- 待补充 ——-</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div></div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>Donate</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/assets/blogImg/weixin.png" alt="flysall WeChat Pay"/>
+        <p>WeChat Pay</p>
+      </div>
+    
+
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Java/" rel="tag"># Java</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/02/12/java-object-reference/" rel="next" title="【jdk源码】再谈Java容器与对象引用">
+                <i class="fa fa-chevron-left"></i> 【jdk源码】再谈Java容器与对象引用
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/assets/blogImg/myavatar.jpg"
+               alt="flysall" />
+          <p class="site-author-name" itemprop="name">flysall</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">13</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/flysall" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                    
+                      GitHub
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/p/1005055496887658/home?from=page_100505&mod=TAB#place" target="_blank" title="微博">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                    
+                      微博
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://www.zhihu.com/people/flysall/activities" target="_blank" title="知乎">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                    
+                      知乎
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://www.douban.com/people/159739786/" target="_blank" title="豆瓣">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                    
+                      豆瓣
+                    
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Java基本类型及其对应的包装类型"><span class="nav-number">1.</span> <span class="nav-text">Java基本类型及其对应的包装类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#整数的有无符号表示"><span class="nav-number">2.</span> <span class="nav-text">整数的有无符号表示</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#无符号数"><span class="nav-number">2.1.</span> <span class="nav-text">无符号数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#有符号数-补码"><span class="nav-number">2.2.</span> <span class="nav-text">有符号数(补码)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#补码溢出"><span class="nav-number">3.</span> <span class="nav-text">补码溢出</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#浮点数的精度问题"><span class="nav-number">4.</span> <span class="nav-text">浮点数的精度问题</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2017 &mdash; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">flysall</span>
+
+  
+</div>
+
+
+  <div class="powered-by">
+    由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+  </div>
+
+  <span class="post-meta-divider">|</span>
+
+  <div class="theme-info">
+    主题 &mdash;
+    <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+      NexT.Pisces
+    </a>
+  </div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+  
+  <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
