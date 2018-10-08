@@ -102,7 +102,7 @@
 <meta property="og:site_name" content="flysall&#39;s home">
 <meta property="og:description" content="虽然这是一个非常简单的问题，但对应的回答绝非那么简单！其实完全可以从Java的基本类型延伸扩展到很多其他方面，具体说来有整数的有无符号表示，整数补码的溢出、浮点数的精度，32位虚拟机下long和double的线程安全，以及带坑的自动拆箱问题。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-07-18T15:45:27.761Z">
+<meta property="og:updated_time" content="2018-10-03T00:59:22.352Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="请简单介绍一下Java的基本类型？">
 <meta name="twitter:description" content="虽然这是一个非常简单的问题，但对应的回答绝非那么简单！其实完全可以从Java的基本类型延伸扩展到很多其他方面，具体说来有整数的有无符号表示，整数补码的溢出、浮点数的精度，32位虚拟机下long和double的线程安全，以及带坑的自动拆箱问题。">
@@ -175,7 +175,7 @@
       </a>
     </div>
       
-        <p class="site-subtitle"></p>
+        <h1 class="site-subtitle" itemprop="description"></h1>
       
   </div>
 
@@ -284,7 +284,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">请简单介绍一下Java的基本类型？</h1>
+          <h2 class="post-title" itemprop="name headline">请简单介绍一下Java的基本类型？</h2>
         
 
         <div class="post-meta">
@@ -508,7 +508,7 @@
 <h3 id="无符号数"><a href="#无符号数" class="headerlink" title="无符号数"></a>无符号数</h3><p>无符号可以简单的理解为只拿这些比特序列来表示非负整数，把这些二进制比特序列转换为十进制即可得到我们想要的无符号数。</p>
 <h3 id="有符号数-补码"><a href="#有符号数-补码" class="headerlink" title="有符号数(补码)"></a>有符号数(补码)</h3><p>有符号数也就意味着我们要把从这16个比特序列拿一部分出来表示负数，具体拿多少，怎么分配才是最有意思的地方。按以下思路走一遍：初步设想拿一半来表示正数，那一半来表示负数，但中间还有个零，于是我们决定把<code>0000</code>到<code>0111</code>这八个比特序列用来表示<code>0</code>到<code>7</code>，在剩下的8个比特序列中，分别是从<code>1000</code>到<code>1111</code>，其中<code>1111</code>最大，从<code>-8</code>到<code>-1</code>，其中<code>-1</code>最大，暂且决定用<code>1111</code>来表示<code>-1</code>,根据相对大小关系把上述表格填上，填完后再来看看这样有什么好处。对于非负数，具体是<code>0</code>到<code>7</code>，它们对应的二进制比特序列的最高位都是<code>0</code>，对于那些负数，具体是<code>-8</code>到<code>-1</code>，它们对应的二进制比特序列的最高位都是<code>1</code>，<strong>所以可以通过最高位来判断一个有符号数是正数还是负数。</strong>前面说过，我们用<code>1111</code>来表示<code>-1</code>，有了<code>-1</code>，我们就能得到<code>-2</code>，也就是<code>-1</code>减<code>1</code>，即<code>1111</code>减<code>0001</code>，计算结果为<code>1110</code>，刚好是上述表格中<code>-2</code>的二进制表示，从数学的角度上看，<code>-1</code>加<code>-1</code>的结果也是<code>-2</code>，那<code>1111</code>加<code>1111</code>的结果是多少呢？你绝没有算错，丢弃掉最高位的进位后得到的结果是<code>1110</code>，正是上述表格中<code>-2</code>的二进制表示。正式介绍一下，这玩意叫<strong>补码</strong>。<strong>换而言之，补码可以把减法运算转换为加法运算</strong>，这才是它厉害的地方，毕竟CPU里只有加法器，而没有减法器。</p>
 <h2 id="补码溢出"><a href="#补码溢出" class="headerlink" title="补码溢出"></a>补码溢出</h2><p>介绍完补码，直奔下一主题<strong>补码溢出</strong>，直接看一段一般的二分查找Java代码：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">public class Search &#123;</div><div class="line">    public static int binarySearch(int[] nums, int target) &#123;</div><div class="line">        int low = 0, high = nums.length-1;</div><div class="line">        while(low &lt;= high) &#123;</div><div class="line">            int mid = (low + high) / 2;  // #1 bug</div><div class="line">            if(target == nums[mid]) </div><div class="line">                return mid;</div><div class="line">            else if(target &lt; nums[mid]) </div><div class="line">                right = mid-1;</div><div class="line">            else &#123;</div><div class="line">                left = mid+1;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        return -1;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure><br>上述代码的问题在于，Java中只有有符号数，<code>#1</code>处代码为<code>int mid = (low + high) / 2;</code>，这就存在一个很大的隐患：<strong>当<code>low</code>和<code>high</code>都很大的时候它两相加会得到一个负数</strong>，这样计算出的<code>mid</code>自然时不对的，按照上述只有4个比特位时的补码表格，<code>5</code>加<code>6</code>得到的结果是<code>-3</code>而不是<code>13</code>，此即补码的<strong>溢出</strong>。既然相加会溢出，那就换成相减好了，这在数学上并不困难，代码改为<code>int mid = low + (high - low) / 2;</code>，这样就解决了溢出问题，不过还能用位运算稍微优化一下，改为<code>int mid = low + ((high - low) &gt;&gt; 1);</code>，不要嫌扩号多，<strong>位移运算符的优先级要比加减运算符低。</strong>最终的二分查找代码如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">public class Search &#123;</div><div class="line">    public static int binarySearch(int[] nums, int target) &#123;</div><div class="line">        int low = 0, high = nums.length-1;</div><div class="line">        while(low &lt;= high) &#123;</div><div class="line">            int mid = low + ((high - low) &gt;&gt; 1);</div><div class="line">            if(target == nums[mid]) </div><div class="line">                return mid;</div><div class="line">            else if(target &lt; nums[mid]) </div><div class="line">                right = mid-1;</div><div class="line">            else &#123;</div><div class="line">                left = mid+1;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        return -1;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<h2 id="浮点数的精度问题"><a href="#浮点数的精度问题" class="headerlink" title="浮点数的精度问题"></a>浮点数的精度问题</h2><p>完全可以用一句话来描述浮点数的精度问题：在有限个位内，一个十进制浮点数无法精确的用二进制表示。Java中有两种浮点数，分别是<code>32</code>位的<code>float</code>和<code>64</code>位的<code>double</code>，就拿<code>float</code>来说，当一个十进制的浮点数转换为二进制，其对应的长度超过<code>32</code>比特后会被截断，也就是说：<strong>两个不同的十进制浮点数对应的二进制表示可能是相同的。</strong>《Effective Java》上也谈到过这个问题，只不过换了种说法：<strong>不要使用<code>==</code>运算符来判断两个浮点数是否相等。</strong><br>——- 待补充 ——-</p>
+<h2 id="浮点数的精度问题"><a href="#浮点数的精度问题" class="headerlink" title="浮点数的精度问题"></a>浮点数的精度问题</h2><p>完全可以用一句话来描述浮点数的精度问题：在有限个位内，一个十进制浮点数无法精确的用二进制表示。Java中有两种浮点数，分别是<code>32</code>位的<code>float</code>和<code>64</code>位的<code>double</code>，就拿<code>float</code>来说，当一个十进制的浮点数转换为二进制，其对应的长度超过<code>32</code>比特后会被截断，也就是说：<strong>两个不同的十进制浮点数对应的二进制表示可能是相同的。</strong>《Effective Java》上也谈到过这个问题，只不过换了种说法：<strong>不要使用<code>==</code>运算符来判断两个浮点数是否相等。</strong><br><br>——- 待补充 ——-</p>
 
       
     </div>
@@ -647,7 +647,7 @@
           <p class="site-author-name" itemprop="name">flysall</p>
            
               <p class="site-description motion-element" itemprop="description"></p>
-          
+           
         </div>
         <nav class="site-state motion-element">
 
@@ -939,6 +939,21 @@
   
 
   
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
 
   
 
